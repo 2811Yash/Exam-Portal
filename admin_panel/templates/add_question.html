@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Add a New Question</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 60px auto;
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.53);
+        }
+        .form-container h2 {
+            color:rgb(0, 0, 0);
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #6a11cb;
+            padding: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease-in-out;
+        }
+        .form-label {
+            color:rgb(4, 1, 7);
+            font-weight: bold;
+        }
+        .btn-custom {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            border: none;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            border-radius: 8px;
+            width: 100%;
+            transition: 0.3s;
+        }
+        .btn-custom:hover {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="form-container">
+            <h2>Add a New Question</h2>
+            <div class="card shadow mt-4">
+                <div class="card-body">
+                    <h4 class="form-label" >Available Exams</h4>
+
+                    
+                    {% if exams %}
+                    <div id="exam-list">
+                        <ul class="list-group">
+                            {% for exam in exams %}
+                            <li class="list-group-item">
+                                
+                                <strong>{{ exam.title }}</strong> <br>
+                                <small class="text-muted">Starts: {{ exam.start_time }} | Duration: {{ exam.duration }} min</small><br>
+                                <small class="text">Exam Id is <strong> {{ exam.id }}</strong> </small>
+                            
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No exams available.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <br>
+            <!-- AI Question Generation Form -->
+            <form method="get">
+                <div class="mb-3">
+                    <label class="form-label">Generate AI Question for Topic</label>
+                    <input type="text" class="form-control" name="topic" placeholder="Enter topic (e.g., Science)">
+                </div>
+                <button type="submit" name="generate_ai" class="btn btn-secondary">Generate with AI</button>
+            </form>
+
+            {% if ai_generated_question %}
+            <hr>
+            <h4 class="text-center text-dark">AI-Generated Question</h4>
+            {% endif %}
+
+            <!-- Manual Question Input Form -->
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">exam id</label>
+                    <textarea class="form-control" name="exam_id" placeholder="Enter exam id"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Enter Question</label>
+                    <textarea class="form-control" name="text" placeholder="Enter question">{{ ai_generated_question.text|default_if_none:'' }}</textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Options (One per line)</label>
+                    <textarea class="form-control" name="options" placeholder="Enter options (one per line)">{% if ai_generated_question.options %}{{ ai_generated_question.options|join:"\n" }}{% endif %}</textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Correct Answer</label>
+                    <input type="text" class="form-control" name="correct_answer" placeholder="Enter correct answer" value="{{ ai_generated_question.correct_answer|default_if_none:'' }}">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Save Question</button>
+            </form>
+
+            {% comment %} <a href="{% url 'question_list' %}" class="btn btn-secondary mt-2">View All Questions</a> {% endcomment %}
+            <div class="text-center mt-4">
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

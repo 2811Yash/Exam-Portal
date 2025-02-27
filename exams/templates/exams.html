@@ -1,0 +1,6 @@
+{% for result in results %}
+    <p>Exam: {{ result.exam.title }}</p>
+    <p>Question: {{ result.question.text }}</p>
+    <p>Your Answer: {{ result.selected_answer }}</p>
+    <p>Correct: {{ result.is_correct }}</p>
+{% endfor %}
