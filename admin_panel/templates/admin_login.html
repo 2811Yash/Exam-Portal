@@ -13,7 +13,7 @@
         <div class="alert alert-danger">{{ error }}</div>
     {% endif %} 
 
-    <form method="post" action={%url 'admin_dashboard'%}class="border p-4 rounded shadow">
+    <form method="post" class="border p-4 rounded shadow">
         {% csrf_token %}
         
         <div class="mb-3">
