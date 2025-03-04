@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from urllib.parse import urlparse
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +25,7 @@ EMAIL_HOST = "smtp.gmail.com"  # Use your email provider
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "281103yashpatil@gmail.com"  # Your email
-EMAIL_HOST_PASSWORD = "zqobbvgiqttamuxq"  # App password (not your real password)
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")# App password (not your real password)
 
 
 # Quick-start development settings - unsuitable for production
@@ -86,36 +91,35 @@ WSGI_APPLICATION = 'exam_portal.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': '1234',
-        'HOST':'localhost',
-        'PORT': '5432'
-    }
-}
-
-# import os
-# from urllib.parse import urlparse
-
-# DATABASE_URL ="postgresql://db_ckzm_user:DKHtijhJfFAlzyoi1BEgZlZeFz9vi3X0@dpg-cuu257ggph6c73b7r220-a.oregon-postgres.render.com/db_ckzm"
-
-# if DATABASE_URL:
-#     url = urlparse(DATABASE_URL)
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': url.path[1:],  # Remove leading slash from the DB name
-#             'USER': url.username,
-#             'PASSWORD': url.password,
-#             'HOST': url.hostname,
-#             'PORT': url.port or '5432',
-#         }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'PASSWORD': '1234',
+#         'HOST':'localhost',
+#         'PORT': '5432'
 #     }
-# else:
-#     raise ValueError("DATABASE_URL is not set in environment variables")
+# }
+
+  # Load environment variables from .env
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    url = urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': url.path[1:],  # Remove leading slash from the DB name
+            'USER': url.username,
+            'PASSWORD': url.password,
+            'HOST': url.hostname,
+            'PORT': url.port or '5432',
+        }
+    }
+else:
+    raise ValueError("DATABASE_URL is not set in environment variables")
 
 
 
