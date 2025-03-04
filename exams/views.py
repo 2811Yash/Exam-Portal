@@ -1,31 +1,28 @@
-
-from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.http import JsonResponse
-from admin_panel.models import Exam, Question,ExamResult
 from admin_panel.models import ExamAttempt
-from .models import Response
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from datetime import timedelta
+from .models import Exam, Question, Response
 import json
 
-def signup(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('dashboard')
-    else:
-        form = UserCreationForm()
-    return render(request, 'signup.html', {'form': form})
-
-
-
+@login_required
 def dashboard(request):
-    exams = Exam.objects.all()
-    return render(request, 'dashboard.html', {'exams': exams})
+    current_time = timezone.now()  # Get current time
+    next_24_hours = current_time + timedelta(hours=24)  # Get time 24 hours from now
+
+    # Fetch exams that have already started OR will start within the next 24 hours
+    available_exams = Exam.objects.filter(start_time__lte=next_24_hours)
+
+    return render(request, 'dashboard.html', {
+        'exams': available_exams,
+        'current_time': current_time,  # Send current time to the template
+    })
 
 
 def take_exam(request, exam_id):
@@ -43,15 +40,6 @@ def take_exam(request, exam_id):
         "exam": exam,
         "questions_json": json.dumps(questions_list)
     })
-
-from django.utils.timezone import now
-from django.contrib.auth import logout
-from django.shortcuts import get_object_or_404, redirect
-from django.http import JsonResponse
-from django.contrib import messages
-from datetime import timedelta
-from .models import Exam, Question, Response
-from admin_panel.models import ExamAttempt
 
 def submit_exam(request, exam_id):
     if request.method == "POST":
@@ -98,9 +86,9 @@ def exam_results(request):
 
 def login_view(request):
     if request.method == "POST":
-        username = request.POST.get("username")
+        email = request.POST.get("username")
         password = request.POST.get("password")
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=email, password=password)
         print("enter")
         if user is not None:
             print("login")
@@ -111,18 +99,7 @@ def login_view(request):
 
     return render(request, 'login.html')
 
-def signup_view(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
-        print("enter in")
-        if form.is_valid():
-            user = form.save()
-            print("logged in")
-            login(request, user)
-            return redirect('dashboard')
-    else:
-        form = UserCreationForm()
-    return render(request, 'signup.html', {'form': form})
+
 
 def logout_view(request):
     logout(request)

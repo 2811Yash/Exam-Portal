@@ -120,14 +120,18 @@
             }
         }
 
+    
         function detectTabChange() {
+            let tabSwitched = false;
+        
             document.addEventListener("visibilitychange", function () {
-                if (document.hidden) {
-                    alert("You switched tabs! Your exam will be submitted now.");
+                if (document.hidden && !tabSwitched) {
+                    tabSwitched = true;
+                    alert(" Your exam will be submitted now.");
                     submitExam();
                 }
             });
-
+        
             document.addEventListener("fullscreenchange", function () {
                 if (!document.fullscreenElement) {
                     alert("You exited fullscreen! Your exam will be submitted.");
@@ -135,6 +139,7 @@
                 }
             });
         }
+        
 
         window.onload = function () {
             setTimeout(() => enterFullScreen(), 1000);

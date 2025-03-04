@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Student List{% endblock %}
+
+{% block content %}
+<style>
+    .container {
+        max-width: 900px;
+    }
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: 0.3s;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+    }
+    .table thead {
+        background-color: #007bff;
+        color: white;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+    .exam-results-header {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        border-radius: 10px;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+    }
+</style>
+<div class="exam-results-header p-3 mb-4 d-flex justify-content-between align-items-center shadow-sm">
+    <h3 class="text-white"><i class="bi bi-people"></i> Student list</h3>
+</div>
+<div class="container mt-4">
+    {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success text-center">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    <!-- Student List Section -->
+    <div class="card p-4 mt-4">
+        <h3 class="text-center text-primary">Student List</h3>
+
+        <form method="post" action="{% url 'student_list' %}" id="delete-form">
+            {% csrf_token %}
+            <input type="hidden" name="delete_students" id="delete-students-input">
+        
+            <table class="table table-hover table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <th class="text-center"><input type="checkbox" id="select-all"></th>
+                        <th>Username</th>
+                        <th>Date Joined</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                        <tr>
+                            <td class="text-center">
+                                <input type="checkbox" class="student-checkbox" value="{{ student.id }}">
+                            </td>
+                            <td>{{ student.username }}</td>
+                            <td>{{ student.date_joined }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" data-student-id="{{ student.id }}">
+                                    🗑 Delete
+                                </button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-danger fw-bold">No students found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        
+            <button type="submit" id="bulk-delete-btn" class="btn btn-danger w-100 btn-sm mt-2">
+                🗑 Delete Selected Students
+            </button>
+        </form>
+        
+        
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Select/Deselect all checkboxes
+        document.getElementById("select-all").addEventListener("change", function() {
+            document.querySelectorAll(".student-checkbox").forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    
+        // Confirm Bulk Delete
+        document.getElementById("bulk-delete-btn").addEventListener("click", function (event) {
+            event.preventDefault();
+    
+            let selectedStudents = [];
+            document.querySelectorAll(".student-checkbox:checked").forEach(checkbox => {
+                selectedStudents.push(checkbox.value);
+            });
+    
+            if (selectedStudents.length === 0) {
+                Swal.fire("No students selected", "Please select at least one student.", "info");
+                return;
+            }
+    
+            Swal.fire({
+                title: "Are you sure?",
+                text: `You are about to delete ${selectedStudents.length} student(s)!`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#dc3545",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, delete!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById("delete-students-input").value = selectedStudents.join(",");
+                    document.getElementById("delete-form").submit();
+                }
+            });
+        });
+    
+        // Confirm Single Delete
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+                
+                let studentId = this.getAttribute("data-student-id");
+    
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This student will be permanently deleted!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#dc3545",
+                    cancelButtonColor: "#6c757d",
+                    confirmButtonText: "Yes, delete!",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Submit a new form for a single delete
+                        let form = document.createElement("form");
+                        form.method = "post";
+                        form.action = "{% url 'student_list' %}";  // Keep the correct URL
+                        form.innerHTML = `
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_students" value="${studentId}">
+                        `;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+    
+    
+</script>
+{%endblock%}

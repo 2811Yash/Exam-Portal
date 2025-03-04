@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Students{% endblock %}
+
+{% block content %}
+<!-- Styles for better UI -->
+<style>
+    .container {
+        max-width: 900px;
+    }
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: 0.3s;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+    }
+    .btn-custom {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        color: white;
+        border: none;
+        font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+    .btn-custom:hover {
+        background: linear-gradient(to right, #2575fc, #6a11cb);
+    }
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .table thead {
+        background-color: #007bff;
+        color: white;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+    .exam-results-header {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        border-radius: 10px;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+    }
+</style>
+<div class="exam-results-header p-3 mb-4 d-flex justify-content-between align-items-center shadow-sm">
+    <h3 class="text-white"><i class="bi bi-person-plus"></i> Add Student</h3>
+</div>
+<div class="container mt-4">
+    
+    <div class="card p-4">
+        <h2 class="text-center text-primary mb-3">Add New Student</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success text-center">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Upload File Form -->
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Upload Email List (.txt)</label>
+                <input type="file" name="email_file" class="form-control" accept=".txt" required>
+            </div>
+            <button type="submit" class="btn btn-custom btn-small d-block mx-auto">📂 Upload & Add Students</button>
+        </form>
+
+        <hr>
+
+        <!-- Add Single Student -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Username (Email)</label>
+                <input type="email" name="username" class="form-control" placeholder="Enter student email" required>
+            </div>
+            <button type="submit" class="btn btn-custom btn-small d-block mx-auto">➕ Add Student</button>
+        </form>
+    </div>
+</div>
+
+<!-- Include Toastify CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<!-- Include Toastify JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Handle single student deletion
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent default form submission
+                
+                let form = this.closest(".delete-student-form");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This student will be permanently deleted!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#dc3545",
+                    cancelButtonColor: "#6c757d",
+                    confirmButtonText: "Yes, delete!",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit(); // Submit the form after confirmation
+                    }
+                });
+            });
+        });
+
+        // Handle bulk delete
+        document.getElementById("bulk-delete-btn").addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            let selectedStudents = document.querySelectorAll("input[name='delete_students']:checked");
+            let form = document.getElementById("delete-form");
+
+            if (selectedStudents.length === 0) {
+                Swal.fire("No students selected", "Please select at least one student to delete.", "info");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: `You are about to delete ${selectedStudents.length} students!`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#dc3545",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, delete!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Remove existing hidden inputs to avoid duplicates
+                    document.querySelectorAll(".hidden-student-input").forEach(input => input.remove());
+
+                    // Add selected student IDs as hidden inputs to the form
+                    selectedStudents.forEach(student => {
+                        let hiddenInput = document.createElement("input");
+                        hiddenInput.type = "hidden";
+                        hiddenInput.name = "delete_students[]";  // Use array notation for multiple values
+                        hiddenInput.value = student.value;
+                        hiddenInput.classList.add("hidden-student-input");
+                        form.appendChild(hiddenInput);
+                    });
+
+                    form.submit(); // Submit the form after adding hidden inputs
+                }
+            });
+        });
+
+        // Select/Deselect all checkboxes
+        document.getElementById("delete-form").addEventListener("submit", function (event) {
+            let selectedStudents = document.querySelectorAll("input[name='delete_students']:checked");
+    
+            if (selectedStudents.length === 0) {
+                event.preventDefault(); 
+                alert("Please select at least one student to delete.");
+                return;
+            }
+        });
+    
+        document.getElementById("select-all").addEventListener("change", function() {
+            let checkboxes = document.querySelectorAll("input[name='delete_students']");
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+        });
+    });
+</script>
+
+
+{% endblock %}

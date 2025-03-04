@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            display: flex;
+            overflow-x: hidden;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #343a40;
+            color: white;
+            position: fixed;
+            padding-top: 20px;
+            transition: 0.3s ease-in-out;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            transition: 0.3s;
+            font-size: 16px;
+        }
+
+        .sidebar a:hover {
+            background: #495057;
+            border-radius: 5px;
+        }
+
+        .sidebar .active {
+            background: #007bff;
+        }
+
+        .sidebar .toggle-btn {
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .sidebar .toggle-btn i {
+
+            font-size: 24px;
+            color: white;
+        }
+
+        /* Collapsed Sidebar */
+        .collapsed {
+            width: 80px;
+        }
+
+        .collapsed a {
+            justify-content: center;
+            padding: 12px 15px;
+        }
+
+        .collapsed a span {
+            display: none;
+        }
+
+        .collapsed .toggle-btn {
+            padding: 10px;
+            text-align :center;
+
+        }
+    
+
+        /* Content area */
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            width: 100%;
+            transition: 0.3s ease-in-out;
+        }
+
+        .collapsed + .content {
+            margin-left: 80px;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #007bff;
+            padding: 12px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logout-btn {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background: #dc3545;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        
+        <div id="text">
+        <h4 class="text-center"><span id="sidebar-title">Admin Panel</span></h4>
+    
+            
+        </div>
+        <div class="toggle-btn" id="toggle" onclick="toggleSidebar()">
+            <i class="bi bi-list"></i>
+        </div>
+        <hr>
+        <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+            <i class="bi bi-house-door"></i> <span>Dashboard</span>
+        </a>
+        <a href="{% url 'add_exam' %}" class="{% if request.resolver_match.url_name == 'add_exam' %}active{% endif %}">
+            <i class="bi bi-calendar-plus"></i> <span>Add Exam</span>
+        </a>
+        <a href="{% url 'delete_exam' %}" class="{% if request.resolver_match.url_name == 'delete_exam' %}active{% endif %}">
+            <i class="bi bi-trash"></i> <span>Delete Exam</span>
+        </a>
+        <a href="{% url 'results' %}" class="{% if request.resolver_match.url_name == 'results' %}active{% endif %}">
+            <i class="bi bi-clipboard-check"></i> <span>View Results</span>
+        </a>
+        <a href="{% url 'add_student' %}" class="{% if request.resolver_match.url_name == 'add_student' %}active{% endif %}">
+            <i class="bi bi-person-plus"></i> <span>Add Student</span>
+        </a>
+        <a href="{% url 'student_list' %}" class="{% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">
+            <i class="bi bi-people"></i> <span>student list</span>
+        </a>
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
+        </a>
+        </div>
+
+    <!-- Content Area -->
+    <div class="content" id="content">
+        
+
+        <!-- Page-specific content -->
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const title = document.getElementById('text');
+            const toggle =document.getElementById('toggle');
+
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                title.style.display = 'none';
+                
+            } else {
+                title.style.display = 'block';
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,64 +1,178 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Exam Results</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+{% extends "base.html" %}
 
-    <div class="container mt-5">
-        <h2 class="text-center text-primary">Exam Results</h2>
+{% block title %}Exam Results{% endblock %}
 
+{% block content %}
+<style>
+    .hidden {
+        display: none;
+    }
+    .navbar {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+    }
+    .search-bar {
+        max-width: 400px;
+        margin-left: auto;
+    }
+    .card {
+        border-radius: 12px;
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.12);
+    }
+    .btn-primary {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        border: none;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(to right, #2575fc, #6a11cb);
+    }
+    .exam-results-header {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        border-radius: 10px;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+    }
+    .exam-results-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    .search-bar {
+        max-width: 300px;
+        border-radius: 20px;
+        padding: 8px 15px;
+        border: none;
+        outline: none;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="exam-results-header p-3 mb-4 d-flex justify-content-between align-items-center shadow-sm">
+        <h3 class="text-white"><i class="bi bi-file-earmark-text"></i> Exam Results</h3>
+        <input type="text" id="searchInput" class="form-control search-bar" placeholder="Search exams...">
+    </div>
+
+    <div class="col-md-9">
         <div class="card shadow mt-4">
             <div class="card-body">
                 <table class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                            <th>Username</th>
+                            <th>Sr. No.</th>
                             <th>Exam</th>
-                            <th>Score</th>
-                            <th>Time Taken</th>
-                            <th>Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for result in results %}
-                        <tr>
-                            <td>{{ result.user.username }}</td>
-                            <td>{{ result.exam.title }}</td>
-                            <td>{{ result.score }}</td>
+                    <tbody id="examTable">
+                        {% for exam in exams %}
+                        <tr class="exam-row">
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-bold">{{ exam.title }}</td>
                             <td>
-                                {% for attempt in attempts %}
-                                    {% if attempt.user == result.user and attempt.exam == result.exam %}
-                                        {{ attempt.total_time_taken }} sec
-                                    {% endif %}
-                                {% endfor %}
+                                <a href="{% url 'exam_results' exam.id %}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View Results
+                                </a>
+                                
                             </td>
-                            <td>
-                                {% for attempt in attempts %}
-                                    {% if attempt.user == result.user and attempt.exam == result.exam %}
-                                        {{ attempt.start_time}}
-                                    {% endif %}
-                                {% endfor %}
+                        </tr>
+                        <tr id="results-{{ exam.id }}" class="hidden">
+                            <td colspan="3">
+                                <button class="btn btn-success btn-sm mb-2" onclick="downloadExcel('{{ exam.id }}')">
+                                    <i class="bi bi-download"></i> Download Excel
+                                </button>
+                                <table class="table table-bordered mt-3" id="table-{{ exam.id }}">
+                                    <thead>
+                                        <tr>
+                                            <th>Sr. No.</th>
+                                            <th>Username</th>
+                                            <th>Score</th>
+                                            <th>Time Taken</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in results %}
+                                            {% if result.exam == exam %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ result.user.username }}</td>
+                                                <td>{{ result.score }}</td>
+                                                <td>
+                                                    {% for attempt in attempts %}
+                                                        {% if attempt.user == result.user and attempt.exam == result.exam %}
+                                                            {{ attempt.total_time_taken }} sec
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </td>
+                                                <td>
+                                                    {% for attempt in attempts %}
+                                                        {% if attempt.user == result.user and attempt.exam == result.exam %}
+                                                            {{ attempt.start_time }}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">No results available</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted">No results available</td>
+                            <td colspan="3" class="text-center text-muted">No exams available</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-
-        <div class="text-center mt-4">
-            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
-        </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<!-- Include Table2Excel Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/TableExport/5.2.0/js/tableexport.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/table2excel@1.1.2/dist/table2excel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+
+<script>
+    function toggleResults(examId) {
+        let row = document.getElementById("results-" + examId);
+        row.classList.toggle("hidden");
+    }
+
+    document.getElementById("searchInput").addEventListener("input", function() {
+        let searchQuery = this.value.toLowerCase();
+        let rows = document.querySelectorAll(".exam-row");
+
+        rows.forEach(row => {
+            let examTitle = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
+            if (examTitle.includes(searchQuery)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+
+    function downloadExcel(examId) {
+        let table = document.getElementById("table-" + examId);
+        
+        if (!table) {
+            alert("Table not found!");
+            return;
+        }
+    
+        let wb = XLSX.utils.table_to_book(table, {sheet: "Exam Results"});
+        XLSX.writeFile(wb, `Exam_Results_${examId}.xlsx`);
+    }
+    
+    
+    
+</script>
+
+{% endblock %}

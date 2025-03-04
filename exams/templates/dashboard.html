@@ -39,23 +39,58 @@
         {% if exams %}
             <div class="row">
                 {% for exam in exams %}
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card shadow border-0">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold text-primary">{{ exam.title }}</h5>
-                                <p class="card-text">Duration: {{ exam.duration }} mins</p>
-                                <p class="text-muted">Starts at: {{ exam.start_time }}</p>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-primary">{{ exam.title }}</h5>
+                            <p class="card-text">Duration: {{ exam.duration }} mins</p>
+                            <p class="text-muted">Starts at: <span id="exam-time-{{ exam.id }}">{{ exam.start_time }}</span></p>
+            
+                            {% if exam.start_time <= current_time %}
+                                <!-- If the exam has already started, show the button -->
                                 <a href="{% url 'take_exam' exam.id %}" class="btn btn-primary w-100">Take Exam</a>
-                            </div>
+                            {% else %}
+                                <!-- If the exam starts in the next 24 hours, show countdown -->
+                                <p class="text-warning" id="countdown-{{ exam.id }}"></p>
+                            {% endif %}
                         </div>
                     </div>
-                {% endfor %}
+                </div>
+            {% endfor %}
+            
             </div>
         {% else %}
             <p class="text-center text-danger">No exams available right now.</p>
         {% endif %}
     </div>
+    <script>
+        function updateCountdown(examId, startTime) {
+            let examTime = new Date(startTime).getTime();
+            let countdownElement = document.getElementById("countdown-" + examId);
+    
+            let interval = setInterval(function () {
+                let now = new Date().getTime();
+                let timeLeft = examTime - now;
+    
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    countdownElement.innerHTML = '<a href="/take_exam/' + examId + '" class="btn btn-primary w-100">Take Exam</a>';
+                } else {
+                    let hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                    let minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    countdownElement.innerHTML = `Starts in: ${hours}h ${minutes}m ${seconds}s`;
+                }
+            }, 1000); 
+        }
 
+        {% for exam in exams %}
+            {% if exam.start_time > current_time %}
+                updateCountdown({{ exam.id }}, "{{ exam.start_time|date:'c' }}");
+            {% endif %}
+        {% endfor %}
+    </script>
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

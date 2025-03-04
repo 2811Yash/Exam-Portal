@@ -1,72 +1,152 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Add New Exams</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-</head>
-<body class="bg-light">
+{% extends "base.html" %}
 
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="text-primary">Manage Exams</h2>
-            <button onclick="history.back()" class="btn btn-light border"><i class="bi bi-arrow-left-circle"></i> Back</button>
-        </div>
+{% block title %}Manage Exams{% endblock %}
 
-        <div class="card shadow mt-4">
-            <div class="card-body">
-                <h4 class="card-title text-info">Available Exams</h4>
-                
-                {% if exams %}
-                <button class="btn btn-outline-info mb-3" onclick="toggleExamList()">Toggle Exam List</button>
-                <div id="exam-list">
-                    <ul class="list-group">
-                        {% for exam in exams %}
-                        <li class="list-group-item">
-                            <strong>{{ exam.title }}</strong> <br>
-                            <small class="text-muted">Starts: {{ exam.start_time }} | Duration: {{ exam.duration }} min</small>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% else %}
-                <p class="text-muted">No exams available.</p>
-                {% endif %}
-            </div>
-        </div>
+{% block content %}
+<style>
+    body {
+        background-color: #f4f6f9;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    
+    .card {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.12);
+        transition: 0.3s ease-in-out;
+        background: white;
+    }
+    
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-custom {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        padding: 12px;
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .btn-custom:hover {
+        background: linear-gradient(to right, #2575fc, #6a11cb);
+        box-shadow: 0 4px 10px rgba(72, 0, 224, 0.3);
+    }
 
-        <div class="card shadow mt-4">
-            <div class="card-body">
-                <h4 class="card-title text-success">Add a New Exam</h4>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        {{ form.as_p }}
+    .btn-outline-custom {
+        border-color: #6a11cb;
+        color: #6a11cb;
+        font-weight: bold;
+    }
+
+    .btn-outline-custom:hover {
+        background: #6a11cb;
+        color: white;
+    }
+    
+    .exam-list li {
+        border-radius: 10px;
+        margin-bottom: 10px;
+        background: rgba(106, 17, 203, 0.1);
+        padding: 15px;
+    }
+    .exam-results-header {
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        border-radius: 10px;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+    }
+    </style>
+    <div class="exam-results-header p-3 mb-4 d-flex justify-content-between align-items-center shadow-sm">
+    <h3 class="text-white"><i class="bi bi-calendar-plus"></i>   Manage Exams</h3>
+    </div>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-9">
+            
+
+            <!-- Available Exams -->
+            <div id="available-exams" class="card shadow mt-4">
+                <div class="card-body">
+                    <h4 class="card-title text-primary"><i class="bi bi-journal-bookmark"></i> Available Exams</h4>
+                    {% if exams %}
+                    <button class="btn btn-outline-custom mb-3" onclick="toggleExamList()">
+                        <i class="bi bi-eye"></i> Toggle Exam List
+                    </button>
+                    <div id="exam-list">
+                        <ul class="list-group exam-list">
+                            {% for exam in exams %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ exam.title }}</strong> <br>
+                                    <small class="text-muted">Starts: {{ exam.start_time }} | Duration: {{ exam.duration }} min</small>
+                                </div>
+                                <a href="{% url 'add_question' exam.id %}" class="btn btn-sm btn-custom">
+                                    <i class="bi bi-plus-circle"></i> Add Question
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Save Exam</button>
-                </form>
+                    {% else %}
+                    <p class="text-muted">No exams available.</p>
+                    {% endif %}
+                </div>
             </div>
-        </div>
 
-        <div class="text-center mt-4">
-            <a href="{% url 'exam_list' %}" class="btn btn-info">View All Exams</a>
-            <a href="{% url 'add_question' %}" class="btn btn-secondary">Add Questions</a>
+            <!-- Add New Exam Form -->
+            <div id="add-exam" class="card shadow mt-4">
+                <div class="card-body">
+                    <h4 class="card-title text-success"><i class="bi bi-plus-square"></i> Add a New Exam</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.as_p }}
+                        </div>
+                        <button type="submit" class="btn btn-custom w-100">Save Exam</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-    <script>
-        function toggleExamList() {
-            let examList = document.getElementById("exam-list");
-            if (examList.style.display === "none") {
-                examList.style.display = "block";
-            } else {
-                examList.style.display = "none";
-            }
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let urlParams = new URLSearchParams(window.location.search);
+        let viewAll = urlParams.get("view_all");
+
+        if (viewAll === "true") {
+            document.getElementById("available-exams").style.display = "block";
+            document.getElementById("add-exam").style.display = "none";
         }
-    </script>
+    });
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    function toggleExamList() {
+        let examList = document.getElementById("exam-list");
+        if (examList.style.display === "none" || examList.style.display === "") {
+            examList.style.display = "block";  
+        } else {
+            examList.style.display = "none";  
+        }
+    }
+</script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
